@@ -29,11 +29,8 @@ defaultBaudrates = [
     57600,
     74880,
     115200,
+    230400,
     921600,
-    1000000,
-    1500000,
-    2000000,
-    4500000,
 ]
 encodings = ["ASCII", "UTF-8", "UTF-16", "GBK", "GB2312", "GB18030"]
 customSendItemHeight = 40
