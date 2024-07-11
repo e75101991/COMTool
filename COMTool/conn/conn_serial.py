@@ -1,24 +1,41 @@
-
 if __name__ == "__main__":
     import sys, os
+
     path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "..")
     sys.path.insert(0, path)
     sys.path.insert(0, os.path.join(path, ".."))
 
-from PyQt5.QtCore import pyqtSignal,Qt, QRect, QMargins, QObject, pyqtSlot
-from PyQt5.QtWidgets import (QWidget,QPushButton,QMessageBox,QDesktopWidget,QMainWindow,
-                             QVBoxLayout,QHBoxLayout,QGridLayout,QTextEdit,QLabel,QRadioButton,QCheckBox,
-                             QLineEdit,QGroupBox,QSplitter,QFileDialog, QScrollArea)
-from PyQt5.QtGui import QIcon,QFont,QTextCursor,QPixmap,QColor
+from PyQt5.QtCore import pyqtSignal, Qt, QRect, QMargins, QObject, pyqtSlot
+from PyQt5.QtWidgets import (
+    QWidget,
+    QPushButton,
+    QMessageBox,
+    QDesktopWidget,
+    QMainWindow,
+    QVBoxLayout,
+    QHBoxLayout,
+    QGridLayout,
+    QTextEdit,
+    QLabel,
+    QRadioButton,
+    QCheckBox,
+    QLineEdit,
+    QGroupBox,
+    QSplitter,
+    QFileDialog,
+    QScrollArea,
+)
+from PyQt5.QtGui import QIcon, QFont, QTextCursor, QPixmap, QColor
+
 try:
-    import parameters,helpAbout,autoUpdate
+    import parameters, helpAbout, autoUpdate
     from Combobox import ComboBox
     import i18n
     from i18n import _
     import version
     import utils
 except ImportError:
-    from COMTool import parameters,helpAbout,autoUpdate, utils
+    from COMTool import parameters, helpAbout, autoUpdate, utils
     from COMTool.Combobox import ComboBox
     from COMTool import i18n
     from COMTool.i18n import _
@@ -31,47 +48,47 @@ import serial, threading, time
 import serial.tools.list_ports
 
 
-
-
 class Serial(COMM):
-    '''
-        call sequence:
-            onInit
-            onWidget
-            onUiInitDone
-                isConnected or getConnStatus
-                send
-            getConfig
-    '''
+    """
+    call sequence:
+        onInit
+        onWidget
+        onUiInitDone
+            isConnected or getConnStatus
+            send
+        getConfig
+    """
+
     id = "serial"
     name = _("Serial")
     showSerialComboboxSignal = pyqtSignal(list)
     showSwitchSignal = pyqtSignal(ConnectionStatus)
+
     def onInit(self, config):
         self.com = serial.Serial()
         self.config = config
         default = {
-            "port" : None,
-            "baudrate" : 115200,
-            "bytesize" : 8,
-            "parity" : "None",
-            "stopbits" : "1",
-            "flowcontrol" : "None",
-            "rts" : False,
-            "dtr" : False,
+            "port": None,
+            "baudrate": 115200,
+            "bytesize": 8,
+            "parity": "None",
+            "stopbits": "1",
+            "flowcontrol": "None",
+            "rts": False,
+            "dtr": False,
         }
         for k in default:
             if not k in self.config:
                 self.config[k] = default[k]
         self.widgetConfMap = {
-            "port" : None,
-            "baudrate" : None,
-            "bytesize" : None,
-            "parity" : None,
-            "stopbits" : None,
-            "flowcontrol" : None,
-            "rts" : None,
-            "dtr" : None,
+            "port": None,
+            "baudrate": None,
+            "bytesize": None,
+            "parity": None,
+            "stopbits": None,
+            "flowcontrol": None,
+            "rts": None,
+            "dtr": None,
         }
         self.isOpened = False
         self.busy = False
@@ -92,14 +109,16 @@ class Serial(COMM):
         try:
             self.com.close()
             self.status = ConnectionStatus.CLOSED
-            time.sleep(0.05)  # wait for child threads, not wait also ok, cause child threads are daemon
+            time.sleep(
+                0.05
+            )  # wait for child threads, not wait also ok, cause child threads are daemon
         except Exception:
             pass
 
     def getConfig(self):
-        '''
-            get config, dict type
-        '''
+        """
+        get config, dict type
+        """
         return self.config
 
     def onUiInitDone(self):
@@ -152,7 +171,7 @@ class Serial(COMM):
         self.checkBoxRTS.setToolTip(_("Check to enable(usually output low level)"))
         self.checkBoxDTR.setToolTip(_("Check to enable(usually output low level)"))
         self.serialOpenCloseButton = QPushButton(_("OPEN"))
-        serialSettingsLayout.addWidget(serialPortLabek,0,0)
+        serialSettingsLayout.addWidget(serialPortLabek, 0, 0)
         serialSettingsLayout.addWidget(serailBaudrateLabel, 1, 0)
         serialSettingsLayout.addWidget(serailBytesLabel, 2, 0)
         serialSettingsLayout.addWidget(serailParityLabel, 3, 0)
@@ -164,33 +183,61 @@ class Serial(COMM):
         serialSettingsLayout.addWidget(self.serailParityCombobox, 3, 1)
         serialSettingsLayout.addWidget(self.serailStopbitsCombobox, 4, 1)
         serialSettingsLayout.addWidget(self.serialFlowControlCombobox, 5, 1)
-        serialSettingsLayout.addWidget(self.checkBoxRTS, 6, 0,1,1)
-        serialSettingsLayout.addWidget(self.checkBoxDTR, 6, 1,1,1)
-        serialSettingsLayout.addWidget(self.serialOpenCloseButton, 7, 0,1,2)
+        serialSettingsLayout.addWidget(self.checkBoxRTS, 6, 0, 1, 1)
+        serialSettingsLayout.addWidget(self.checkBoxDTR, 6, 1, 1, 1)
+        serialSettingsLayout.addWidget(self.serialOpenCloseButton, 7, 0, 1, 2)
         self.widget.setLayout(serialSettingsLayout)
-        self.widgetConfMap["port"]       = self.serialPortCombobox
-        self.widgetConfMap["baudrate"]    = self.serailBaudrateCombobox
-        self.widgetConfMap["bytesize"]    = self.serailBytesCombobox
-        self.widgetConfMap["parity"]      = self.serailParityCombobox
-        self.widgetConfMap["stopbits"]    = self.serailStopbitsCombobox
+        self.widgetConfMap["port"] = self.serialPortCombobox
+        self.widgetConfMap["baudrate"] = self.serailBaudrateCombobox
+        self.widgetConfMap["bytesize"] = self.serailBytesCombobox
+        self.widgetConfMap["parity"] = self.serailParityCombobox
+        self.widgetConfMap["stopbits"] = self.serailStopbitsCombobox
         self.widgetConfMap["flowcontrol"] = self.serialFlowControlCombobox
-        self.widgetConfMap["rts"]         = self.checkBoxRTS
-        self.widgetConfMap["dtr"]         = self.checkBoxDTR
+        self.widgetConfMap["rts"] = self.checkBoxRTS
+        self.widgetConfMap["dtr"] = self.checkBoxDTR
         self.initEvet()
         return self.widget
 
     def initEvet(self):
         self.serialPortCombobox.clicked.connect(self.detectSerialPort)
         self.showSerialComboboxSignal.connect(self.showCombobox)
-        self.serialPortCombobox.currentIndexChanged.connect(lambda: self.onSerialConfigChanged("port", self.serialPortCombobox, str))
-        self.serailBaudrateCombobox.currentIndexChanged.connect(lambda: self.onSerialConfigChanged("baudrate", self.serailBaudrateCombobox, int, caller="index change"))
-        self.serailBaudrateCombobox.editTextChanged.connect(lambda: self.onSerialConfigChanged("baudrate", self.serailBaudrateCombobox, int, caller="text change"))
-        self.serailBytesCombobox.currentIndexChanged.connect(lambda: self.onSerialConfigChanged("bytesize", self.serailBytesCombobox, int))
-        self.serailParityCombobox.currentIndexChanged.connect(lambda: self.onSerialConfigChanged("parity", self.serailParityCombobox, str))
-        self.serailStopbitsCombobox.currentIndexChanged.connect(lambda: self.onSerialConfigChanged("stopbits", self.serailStopbitsCombobox, str))
-        self.serialFlowControlCombobox.currentIndexChanged.connect(lambda: self.onSerialConfigChanged("flowcontrol", self.serialFlowControlCombobox, str))
-        self.checkBoxRTS.clicked.connect(lambda: self.onSerialConfigChanged("rts", self.checkBoxRTS, bool))
-        self.checkBoxDTR.clicked.connect(lambda: self.onSerialConfigChanged("dtr", self.checkBoxDTR, bool))
+        self.serialPortCombobox.currentIndexChanged.connect(
+            lambda: self.onSerialConfigChanged("port", self.serialPortCombobox, str)
+        )
+        self.serailBaudrateCombobox.currentIndexChanged.connect(
+            lambda: self.onSerialConfigChanged(
+                "baudrate", self.serailBaudrateCombobox, int, caller="index change"
+            )
+        )
+        self.serailBaudrateCombobox.editTextChanged.connect(
+            lambda: self.onSerialConfigChanged(
+                "baudrate", self.serailBaudrateCombobox, int, caller="text change"
+            )
+        )
+        self.serailBytesCombobox.currentIndexChanged.connect(
+            lambda: self.onSerialConfigChanged(
+                "bytesize", self.serailBytesCombobox, int
+            )
+        )
+        self.serailParityCombobox.currentIndexChanged.connect(
+            lambda: self.onSerialConfigChanged("parity", self.serailParityCombobox, str)
+        )
+        self.serailStopbitsCombobox.currentIndexChanged.connect(
+            lambda: self.onSerialConfigChanged(
+                "stopbits", self.serailStopbitsCombobox, str
+            )
+        )
+        self.serialFlowControlCombobox.currentIndexChanged.connect(
+            lambda: self.onSerialConfigChanged(
+                "flowcontrol", self.serialFlowControlCombobox, str
+            )
+        )
+        self.checkBoxRTS.clicked.connect(
+            lambda: self.onSerialConfigChanged("rts", self.checkBoxRTS, bool)
+        )
+        self.checkBoxDTR.clicked.connect(
+            lambda: self.onSerialConfigChanged("dtr", self.checkBoxDTR, bool)
+        )
         self.serialOpenCloseButton.clicked.connect(self.openCloseSerial)
         self.showSwitchSignal.connect(self.showSwitch)
 
@@ -198,20 +245,26 @@ class Serial(COMM):
         if conf_type == "port":
             obj.setToolTip(obj.currentText())
             newPort = obj.currentText().split(" ")[0]
-            if newPort and not self.isDetectSerialPort and (newPort != self.config["port"] or  not self.com.port):
+            if (
+                newPort
+                and not self.isDetectSerialPort
+                and (newPort != self.config["port"] or not self.com.port)
+            ):
                 self.config["port"] = newPort
                 print("-- set to new port:", self.config["port"])
                 try:
                     self.com.port = self.config["port"]
                 except Exception as e:
-                    msg = _("Open Failed") +"\n"+ str(e)
+                    msg = _("Open Failed") + "\n" + str(e)
                     self.status = ConnectionStatus.CLOSED
                     self.onConnectionStatus.emit(self.status, msg)
                     self.showSwitchSignal.emit(self.status)
         elif conf_type in ["baudrate", "bytesize", "parity", "stopbits"]:
             # custom baudrate input
             text = obj.currentText()
-            if conf_type == "baudrate" and ((not text) or text == self.baudrateCustomStr):
+            if conf_type == "baudrate" and (
+                (not text) or text == self.baudrateCustomStr
+            ):
                 self.serailBaudrateCombobox.clearEditText()
                 return
             self.config[conf_type] = value_type(text.split(" ")[0])
@@ -246,6 +299,7 @@ class Serial(COMM):
             for i in range(len(obj)):
                 values.append(obj.itemText(i))
             return values
+
         if conf_type == "port":
             values = getCommboboxItems(obj)
             idx = 0
@@ -269,7 +323,9 @@ class Serial(COMM):
                 value = float(value)
             self.com.__setattr__(conf_type, value)
             if conf_type == "baudrate":
-                self.oneByteTime = 1 / (self.com.baudrate / (self.com.bytesize + 2 + self.com.stopbits)) # 1 byte use time
+                self.oneByteTime = 1 / (
+                    self.com.baudrate / (self.com.bytesize + 2 + self.com.stopbits)
+                )  # 1 byte use time
         elif conf_type == "flowcontrol":
             values = getCommboboxItems(obj)
             idx = 0
@@ -333,7 +389,7 @@ class Serial(COMM):
                     self.com.close()
                 except Exception:
                     pass
-                msg = _("Open Failed") +"\n"+ str(e)
+                msg = _("Open Failed") + "\n" + str(e)
                 self.hintSignal.emit("error", _("Error"), msg)
                 self.status = ConnectionStatus.CLOSED
                 self.onConnectionStatus.emit(self.status, msg)
@@ -351,17 +407,17 @@ class Serial(COMM):
         items = []
         while 1:
             portList = self.findSerialPort()
-            if len(portList)>0:
+            if len(portList) > 0:
                 for p in portList:
                     showStr = "{} {} - {}".format(p.device, p.name, p.description)
                     if p.manufacturer:
-                        showStr += ' - {}'.format(p.manufacturer)
+                        showStr += " - {}".format(p.manufacturer)
                     if p.pid:
-                        showStr += ' - pid(0x{:04X})'.format(p.pid)
+                        showStr += " - pid(0x{:04X})".format(p.pid)
                     if p.vid:
-                        showStr += ' - vid(0x{:04X})'.format(p.vid)
+                        showStr += " - vid(0x{:04X})".format(p.vid)
                     if p.serial_number:
-                        showStr += ' - v{}'.format(p.serial_number)
+                        showStr += " - v{}".format(p.serial_number)
                     if p.device.startswith("/dev/cu.Bluetooth-Incoming-Port"):
                         continue
                     items.append(showStr)
@@ -376,8 +432,10 @@ class Serial(COMM):
         for item in items:
             self.serialPortCombobox.addItem(item)
             if self.config["port"]:
-                index = self.serialPortCombobox.findText(self.config["port"], Qt.MatchContains)
-                if index>=0:
+                index = self.serialPortCombobox.findText(
+                    self.config["port"], Qt.MatchContains
+                )
+                if index >= 0:
                     set = index
         self.serialPortCombobox.showPopup()
         self.isDetectSerialPort = False
@@ -421,7 +479,7 @@ class Serial(COMM):
     def receiveDataProcess(self):
         waitingReconnect = False
         self.com.timeout = 0.001
-        buffer = b''
+        buffer = b""
         t = 0
         while self.status != ConnectionStatus.CLOSED:
             if waitingReconnect:
@@ -431,7 +489,9 @@ class Serial(COMM):
                         self.com.open()
                         print("-- reopen serial")
                         waitingReconnect = False
-                        self.onConnectionStatus.emit(ConnectionStatus.CONNECTED, _("Reconnected"))
+                        self.onConnectionStatus.emit(
+                            ConnectionStatus.CONNECTED, _("Reconnected")
+                        )
                         self.showSwitchSignal.emit(ConnectionStatus.CONNECTED)
                         continue
                     except Exception as e:
@@ -443,18 +503,20 @@ class Serial(COMM):
                 data = self.com.read(length)
                 if data:
                     t = time.time()
-                    if length == 1 and not buffer: # just start receive
+                    if length == 1 and not buffer:  # just start receive
                         buffer += data
                         continue
                     buffer += data
-                if buffer and (time.time() - t > self.oneByteTime * 2): # no new data in next frame
+                if buffer and (
+                    time.time() - t > self.oneByteTime * 2
+                ):  # no new data in next frame
                     try:
                         self.onReceived(buffer)
                     except Exception as e:
                         print("-- error in onReceived callback:", e)
-                    buffer = b''
+                    buffer = b""
             except Exception as e:
-                if (self.status != ConnectionStatus.CLOSED):
+                if self.status != ConnectionStatus.CLOSED:
                     # close as fast as we can to release port
                     try:
                         self.com.close()
@@ -462,21 +524,26 @@ class Serial(COMM):
                         pass
                     waitingReconnect = True
                     self.status = ConnectionStatus.LOSE
-                    self.onConnectionStatus.emit(ConnectionStatus.LOSE, _("Connection lose!"))
+                    self.onConnectionStatus.emit(
+                        ConnectionStatus.LOSE, _("Connection lose!")
+                    )
                     self.showSwitchSignal.emit(ConnectionStatus.LOSE)
 
-
-    def send(self, data : bytes):
+    def send(self, data: bytes):
         self.com.write(data)
 
     def isConnected(self):
-        return (self.status == ConnectionStatus.CONNECTED) or (self.status == ConnectionStatus.LOSE)
+        return (self.status == ConnectionStatus.CONNECTED) or (
+            self.status == ConnectionStatus.LOSE
+        )
 
     def getConnStatus(self):
         return self.status
 
+
 if __name__ == "__main__":
     from PyQt5.QtWidgets import QApplication
+
     app = QApplication(sys.argv)
 
     conn = Serial()

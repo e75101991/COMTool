@@ -1,11 +1,38 @@
 from audioop import add
 import ctypes
 from PyQt5.QtCore import pyqtSignal, QPoint, Qt, QEvent, QObject
-from PyQt5.QtWidgets import (QWidget, QHBoxLayout, QVBoxLayout, QLabel, QStyleOption, QStyle, QPushButton, QTextEdit,
-                            QPlainTextEdit, QMainWindow, QComboBox, QListView, QTabWidget, QStackedWidget, QListWidget,
-                            QGridLayout, QLineEdit, QDialog, QScrollArea)
-from PyQt5.QtGui import QIcon, QPixmap, QPainter, QMouseEvent, QColor, QKeyEvent, QHideEvent, QKeySequence
-import qtawesome as qta # https://github.com/spyder-ide/qtawesome
+from PyQt5.QtWidgets import (
+    QWidget,
+    QHBoxLayout,
+    QVBoxLayout,
+    QLabel,
+    QStyleOption,
+    QStyle,
+    QPushButton,
+    QTextEdit,
+    QPlainTextEdit,
+    QMainWindow,
+    QComboBox,
+    QListView,
+    QTabWidget,
+    QStackedWidget,
+    QListWidget,
+    QGridLayout,
+    QLineEdit,
+    QDialog,
+    QScrollArea,
+)
+from PyQt5.QtGui import (
+    QIcon,
+    QPixmap,
+    QPainter,
+    QMouseEvent,
+    QColor,
+    QKeyEvent,
+    QHideEvent,
+    QKeySequence,
+)
+import qtawesome as qta  # https://github.com/spyder-ide/qtawesome
 import os, sys
 
 try:
@@ -23,11 +50,16 @@ except Exception:
 
 
 class TitleBar(QWidget):
-    def __init__(self, parent, icon=None, title="", height=35,
-                        btnIcons = None,
-                        brothers=[],
-                        widgets=[[], []]
-                ) -> None:
+    def __init__(
+        self,
+        parent,
+        icon=None,
+        title="",
+        height=35,
+        btnIcons=None,
+        brothers=[],
+        widgets=[[], []],
+    ) -> None:
         super().__init__()
         self._height = height
         self.parent = parent
@@ -36,13 +68,13 @@ class TitleBar(QWidget):
                 "mdi.window-minimize",
                 ["mdi.window-maximize", "mdi.window-restore"],
                 "mdi.window-close",
-                ["ph.push-pin-bold", "ph.push-pin-fill"]
+                ["ph.push-pin-bold", "ph.push-pin-fill"],
             ]
         self.btnIcons = btnIcons
         layout = QHBoxLayout()
         if brothers:
             rootLayout = QVBoxLayout()
-            rootLayout.setContentsMargins(0,0,0,0)
+            rootLayout.setContentsMargins(0, 0, 0, 0)
             rootLayout.setSpacing(0)
             widget = QWidget()
             widget.setProperty("class", "TitleBar")
@@ -56,7 +88,7 @@ class TitleBar(QWidget):
         else:
             self.setLayout(layout)
         self.setFixedHeight(self._height)
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         iconWidget = None
         if icon and os.path.exists(icon):
@@ -115,17 +147,23 @@ class TitleBar(QWidget):
         self.close.setProperty("class", "close")
         self.title.setProperty("class", "title")
         self.top.setProperty("class", "top")
-        self.close.clicked.connect(lambda : parent.close())
-        self.max.clicked.connect(lambda : self.onSetMaximized(fromMaxBtn=True))
-        self.min.clicked.connect(lambda : parent.setWindowState(Qt.WindowNoState) if parent.windowState() == Qt.WindowMinimized else parent.setWindowState(Qt.WindowMinimized))
-        self.top.clicked.connect(lambda : self.onSetTop())
+        self.close.clicked.connect(lambda: parent.close())
+        self.max.clicked.connect(lambda: self.onSetMaximized(fromMaxBtn=True))
+        self.min.clicked.connect(
+            lambda: (
+                parent.setWindowState(Qt.WindowNoState)
+                if parent.windowState() == Qt.WindowMinimized
+                else parent.setWindowState(Qt.WindowMinimized)
+            )
+        )
+        self.top.clicked.connect(lambda: self.onSetTop())
         self.setProperty("class", "TitleBar")
 
     def mouseDoubleClickEvent(self, event):
         if event.buttons() == Qt.LeftButton:
             self.onSetMaximized()
 
-    def onSetMaximized(self, isMax = None, fromMaxBtn=False, fullScreen = False):
+    def onSetMaximized(self, isMax=None, fromMaxBtn=False, fullScreen=False):
         if not isMax is None:
             if isMax:
                 utils_ui.setButtonIcon(self.max, self.btnIcons[1][1])
@@ -137,7 +175,9 @@ class TitleBar(QWidget):
             if self.parent.windowState() != Qt.WindowFullScreen:
                 status = Qt.WindowFullScreen
         elif self.parent.windowState() == Qt.WindowNoState:
-            if fromMaxBtn and sys.platform.startswith("darwin"): # mac max button to full screen
+            if fromMaxBtn and sys.platform.startswith(
+                "darwin"
+            ):  # mac max button to full screen
                 status = Qt.WindowFullScreen
             else:
                 status = Qt.WindowMaximized
@@ -151,19 +191,22 @@ class TitleBar(QWidget):
         else:
             self.show()
 
-    def onSetTop(self, on = None):
+    def onSetTop(self, on=None):
         flags = self.parent.windowFlags()
         needShow = self.parent.isVisible()
+
         def _on(flags):
             flags |= Qt.WindowStaysOnTopHint
             self.parent.setWindowFlags(flags)
             utils_ui.setButtonIcon(self.top, self.btnIcons[3][1])
             self.top.setProperty("class", "topActive")
+
         def _off(flags):
-            flags &=  (~Qt.WindowStaysOnTopHint)
+            flags &= ~Qt.WindowStaysOnTopHint
             self.parent.setWindowFlags(flags)
             utils_ui.setButtonIcon(self.top, self.btnIcons[3][0])
             self.top.setProperty("class", "top")
+
         oldOn = flags & Qt.WindowStaysOnTopHint
         if on is None:
             on = False if oldOn else True
@@ -187,6 +230,7 @@ class TitleBar(QWidget):
 
     def setTitle(self, title):
         self.title.setText(title)
+
 
 class EventFilter(QObject):
     Margins = 5  # 边缘边距
@@ -246,8 +290,13 @@ class EventFilter(QObject):
         # print(obj, event.type(), obj.isWindowType(), QEvent.MouseMove)
         if obj.isWindowType():
             # top window 处理光标样式
-            if event.type() == QEvent.MouseMove and obj.windowState() == Qt.WindowNoState:
-                cursor = self._get_cursor(self._get_edges(event.pos(), obj.width(), obj.height(), offset=1))
+            if (
+                event.type() == QEvent.MouseMove
+                and obj.windowState() == Qt.WindowNoState
+            ):
+                cursor = self._get_cursor(
+                    self._get_edges(event.pos(), obj.width(), obj.height(), offset=1)
+                )
                 if not cursor is None:
                     obj.setCursor(cursor)
             if event.type() == QEvent.TouchUpdate and not self._moving:
@@ -255,14 +304,20 @@ class EventFilter(QObject):
                 self.moveOrResize(obj, event.pos(), obj.width(), obj.height())
         elif isinstance(event, QMouseEvent):
             if obj in self.windows:
-                if event.button() == Qt.LeftButton :
+                if event.button() == Qt.LeftButton:
                     if event.type() == QEvent.MouseButtonPress:
                         self._readyToMove = True
                     # elif event.type() == QEvent.MouseButtonDblClick:
                     #     print(obj, event.type(), event)
-                elif event.type() == QEvent.MouseMove and self._readyToMove and not self._moving:
+                elif (
+                    event.type() == QEvent.MouseMove
+                    and self._readyToMove
+                    and not self._moving
+                ):
                     self._moving = True
-                    self.moveOrResize(obj.windowHandle(), event.pos(), obj.width(), obj.height())
+                    self.moveOrResize(
+                        obj.windowHandle(), event.pos(), obj.width(), obj.height()
+                    )
         if event.type() == QEvent.MouseButtonRelease or event.type() == QEvent.Move:
             self._readyToMove = False
             self._moving = False
@@ -270,7 +325,13 @@ class EventFilter(QObject):
 
 
 class CustomTitleBarWindowMixin:
-    def __init__(self, titleBar = None, init = False, title = "", icon = os.path.join(parameters.assetsDir, "logo.png")):
+    def __init__(
+        self,
+        titleBar=None,
+        init=False,
+        title="",
+        icon=os.path.join(parameters.assetsDir, "logo.png"),
+    ):
         if not init:
             return
         isQMainWindow = False
@@ -289,16 +350,18 @@ class CustomTitleBarWindowMixin:
         if titleBar:
             self.titleBar = titleBar
         else:
-            self.titleBar = TitleBar(self, icon = icon, title=title, height=35)
+            self.titleBar = TitleBar(self, icon=icon, title=title, height=35)
         # setWindowIcon
         self.setWindowIcon(QIcon(icon))
         if sys.platform == "win32":
-            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("comtool") # for add taskbar icon
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+                "comtool"
+            )  # for add taskbar icon
         self.contentWidget = QWidget()
         self.rootLayout.addWidget(self.titleBar)
         self.rootLayout.addWidget(self.contentWidget)
         self.root.setLayout(self.rootLayout)
-        self.rootLayout.setContentsMargins(0, 0, 0, 0) # padding
+        self.rootLayout.setContentsMargins(0, 0, 0, 0)  # padding
         self.root.setMouseTracking(True)
         self.titleBar.setMouseTracking(True)
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowMinimizeButtonHint)
@@ -312,13 +375,13 @@ class CustomTitleBarWindowMixin:
 
     def changeEvent(self, event):
         # super(CustomTitleBarWindowMixin, self).changeEvent(event)
-        self.titleBar.onSetMaximized(isMax = self.isMaximized())
+        self.titleBar.onSetMaximized(isMax=self.isMaximized())
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_F11:
             self.titleBar.onSetMaximized(fullScreen=True)
 
-    def keyReleaseEvent(self,event):
+    def keyReleaseEvent(self, event):
         pass
 
     # def paintEvent(self, event):
@@ -407,23 +470,25 @@ class CustomTitleBarWindowMixin:
 
 
 class TextEdit(QTextEdit):
-    def __init__(self,parent=None):
-        super(TextEdit,self).__init__(parent=None)
+    def __init__(self, parent=None):
+        super(TextEdit, self).__init__(parent=None)
 
-    def keyPressEvent(self,event):
+    def keyPressEvent(self, event):
         if event.key() == Qt.Key_Tab:
             tc = self.textCursor()
             tc.insertText("    ")
             return
-        return QTextEdit.keyPressEvent(self,event)
+        return QTextEdit.keyPressEvent(self, event)
+
 
 class PlainTextEdit(QPlainTextEdit):
-    onSave = lambda : None
-    def __init__(self,parent=None):
-        super(QPlainTextEdit,self).__init__(parent=None)
+    onSave = lambda: None
+
+    def __init__(self, parent=None):
+        super(QPlainTextEdit, self).__init__(parent=None)
         self.keyControlPressed = False
 
-    def keyPressEvent(self,event):
+    def keyPressEvent(self, event):
         if event.key() == Qt.Key_Control:
             self.keyControlPressed = True
             return
@@ -434,11 +499,12 @@ class PlainTextEdit(QPlainTextEdit):
             return
         elif event.key() == Qt.Key_S:
             self.onSave()
-        return QPlainTextEdit.keyPressEvent(self,event)
+        return QPlainTextEdit.keyPressEvent(self, event)
 
     def onKeyReleaseEvent(self, event):
         if event.key() == Qt.Key_Control:
             self.keyControlPressed = False
+
 
 class _ListView(QListView):
     focusout = pyqtSignal()
@@ -453,9 +519,11 @@ class _ListView(QListView):
     # def focusOutEvent(self, event):
     #     self.focusout.emit()
 
+
 class _Combobox(QComboBox):
     clicked = pyqtSignal()
     listviewFocusout = pyqtSignal()
+
     def __init__(self):
         super().__init__()
         listView = _ListView()
@@ -490,10 +558,11 @@ class _Combobox(QComboBox):
 class ButtonCombbox(QWidget):
     activated = pyqtSignal(int)
     currentIndexChanged = pyqtSignal()
-    def __init__(self, text="", icon = None, btnClass="smallBtn", btnId=None) -> None:
+
+    def __init__(self, text="", icon=None, btnClass="smallBtn", btnId=None) -> None:
         super().__init__()
         layout = QHBoxLayout()
-        layout.setContentsMargins(2,2,2,2)
+        layout.setContentsMargins(2, 2, 2, 2)
         self.setLayout(layout)
         self.button = QPushButton(text)
         if btnClass:
@@ -506,12 +575,14 @@ class ButtonCombbox(QWidget):
         layout.addWidget(self.button)
         layout.addWidget(self.list)
         self.list.hide()
-        self.button.clicked.connect(lambda:self._ctrl("show"))
+        self.button.clicked.connect(lambda: self._ctrl("show"))
+
         def onAvtivated(idx):
             self.activated.emit(idx)
             self._ctrl("hide")
+
         self.list.activated.connect(lambda idx: onAvtivated(idx))
-        self.list.currentIndexChanged.connect(lambda:self.currentIndexChanged.emit())
+        self.list.currentIndexChanged.connect(lambda: self.currentIndexChanged.emit())
         self.list.listviewFocusout.connect(self._listFocusout)
 
     def _ctrl(self, cmd):
@@ -550,9 +621,11 @@ class ButtonCombbox(QWidget):
     def currentText(self):
         return self.list.currentText()
 
+
 class statusBar(QWidget):
     updateUiSignal = pyqtSignal(str, str)
-    def __init__(self, rxTxCount = False):
+
+    def __init__(self, rxTxCount=False):
         super().__init__()
         self.rxTxCount = rxTxCount
         layout = QHBoxLayout()
@@ -561,8 +634,8 @@ class statusBar(QWidget):
         self.msg = QLabel()
         layout.addWidget(self.msg)
         if rxTxCount:
-            self.rx = QLabel('{}({}): {}'.format(_("Received"), _("bytes"), 0))
-            self.tx = QLabel('{}({}): {}'.format(_("Sent"), _("bytes"), 0))
+            self.rx = QLabel("{}({}): {}".format(_("Received"), _("bytes"), 0))
+            self.tx = QLabel("{}({}): {}".format(_("Sent"), _("bytes"), 0))
             layout.addWidget(self.tx)
             layout.addWidget(self.rx)
         self.updateUiSignal.connect(self._updateUi)
@@ -582,14 +655,18 @@ class statusBar(QWidget):
         if not self.rxTxCount:
             return
         self.rxCount += count
-        msg = '{}({}): {}'.format(_("Received"), _("bytes"), self.rxCount)
+        msg = "{}({}): {}".format(_("Received"), _("bytes"), self.rxCount)
         self.updateUiSignal.emit("rx", msg)
+
+    # 返回已接收到多少数据
+    def getRxCount(self):
+        return self.rxCount
 
     def addTx(self, count):
         if not self.rxTxCount:
             return
         self.txCount += count
-        msg = '{}({}): {}'.format(_("Sent"), _("bytes"), self.txCount)
+        msg = "{}({}): {}".format(_("Sent"), _("bytes"), self.txCount)
         self.updateUiSignal.emit("tx", msg)
 
     def clear(self):
@@ -607,12 +684,14 @@ class statusBar(QWidget):
             color = "#f44336"
         else:
             color = "#008200"
-        msg = '<font color={}>{}</font>'.format(color, msg)
+        msg = "<font color={}>{}</font>".format(color, msg)
         self.updateUiSignal.emit("msg", msg)
+
 
 class HelpWidget(QWidget, CustomTitleBarWindowMixin):
     closed = pyqtSignal()
-    def __init__(self, pluginsHelp:dict, parent=None, icon=None):
+
+    def __init__(self, pluginsHelp: dict, parent=None, icon=None):
         QWidget.__init__(self, parent)
         CustomTitleBarWindowMixin.__init__(self, init=True, title=_("Help"))
         self.resize(800, 700)
@@ -648,9 +727,8 @@ class HelpWidget(QWidget, CustomTitleBarWindowMixin):
         event.accept()
 
 
-
 class EditRemarDialog(QDialog):
-    def __init__(self, remark = "", icon=None, shortcut = [], value=None) -> None:
+    def __init__(self, remark="", icon=None, shortcut=[], value=None) -> None:
         super().__init__()
         self.remark = remark
         self.icon = icon
@@ -669,7 +747,7 @@ class EditRemarDialog(QDialog):
         if self.icon:
             self.iconBtn.setIcon(qta.icon(self.icon, color="white"))
         if self.shortcut:
-            name = "+".join([str(name) for v,name in self.shortcut])
+            name = "+".join([str(name) for v, name in self.shortcut])
         else:
             name = _("Record")
         self.shortcutBtn = QPushButton(name)
@@ -693,17 +771,25 @@ class EditRemarDialog(QDialog):
         def ok():
             self.ok = True
             self.close()
-        self.okBtn.clicked.connect(lambda : ok())
-        self.cancelBtn.clicked.connect(lambda : self.close())
+
+        self.okBtn.clicked.connect(lambda: ok())
+        self.cancelBtn.clicked.connect(lambda: self.close())
+
         def updateRemark(text):
             self.remark = text
             self.iconBtn.setText(self.remark)
+
         self.remarkInput.textChanged.connect(updateRemark)
         self.iconBtn.clicked.connect(lambda: self.selectIcon())
         self.shortcutBtn.clicked.connect(self.setShortcut)
 
     def selectIcon(self):
-        self.icon = selectIcon(parent = self, title = _("Select icon"), btnName = _("OK"), color = utils_ui.getStyleVar("iconSelectorColor"))
+        self.icon = selectIcon(
+            parent=self,
+            title=_("Select icon"),
+            btnName=_("OK"),
+            color=utils_ui.getStyleVar("iconSelectorColor"),
+        )
         if self.icon:
             self.iconBtn.setIcon(qta.icon(self.icon, color="white"))
         else:
@@ -765,18 +851,19 @@ class EditRemarDialog(QDialog):
         elif key == Qt.Key_Super_R:
             name = "Super_R"
         self.shortcut.append((key, name))
-        keys = "+".join([str(name) for v,name in self.shortcut])
+        keys = "+".join([str(name) for v, name in self.shortcut])
         self.shortcutBtn.setText(keys)
 
-    def keyReleaseEvent(self,event):
+    def keyReleaseEvent(self, event):
         if not self.settingShortcut:
             return
-        self.onRecordShortcutEnd(setOk = True)
+        self.onRecordShortcutEnd(setOk=True)
 
     def updateStyle(self, widget):
         self.style().unpolish(widget)
         self.style().polish(widget)
         self.update()
+
 
 class ScrollLabel(QScrollArea):
 
@@ -792,9 +879,11 @@ class ScrollLabel(QScrollArea):
         # vertical box layout
         lay = QVBoxLayout(content)
         # creating label
-        self.label = QLabel(text, parent = content)
+        self.label = QLabel(text, parent=content)
         self.label.setOpenExternalLinks(True)
-        self.label.setTextInteractionFlags(Qt.TextSelectableByMouse | Qt.LinksAccessibleByMouse)
+        self.label.setTextInteractionFlags(
+            Qt.TextSelectableByMouse | Qt.LinksAccessibleByMouse
+        )
         # setting alignment to the text
         self.label.setAlignment(Qt.AlignLeft | Qt.AlignTop)
         # making label multi-line
@@ -810,69 +899,70 @@ if __name__ == "__main__":
     import sys
     from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout
 
-    style = '''
-    QWidget {
-    }
-    .customTilebarWindow {
-        background-color: white;
-    }
-    .TitleBar {
-        background-color: #0b1722;
-        color: white;
-    }
-    .TitleBar QPushButton {
-        border: none;
-    }
-    .TitleBar .icon{
-        margin-left: 5;
-    }
-    .TitleBar .title{
-        margin-left: 5;
-        color: white;
-    }
-    .TitleBar .top{
-        margin-left: 5;
-        color: white;
-        border-radius: 20;
-        background-color: #0b1722;
-    }
-    .TitleBar .top:hover{
-        background-color: #273b4e;
-    }
-    .TitleBar .topActive{
-        margin-left: 5;
-        color: white;
-        border-radius: 20;
-        background-color: #273b4e;
-    }
-    .TitleBar .min{
-        background-color: #53c22a;
-        color: white;
-    }
-    .TitleBar .max{
-        background-color: #e5bf28;
-        color: white;
-    }
-    .TitleBar .close{
-        background-color: #f45952;
-        color: white;
-    }
-    .TitleBar .min:hover {
-        background-color: #2ba13e;
-    }
-    .TitleBar .max:hover {
-        background-color: #cf9001;
-    }
-    .TitleBar .close:hover {
-        background-color: #df2f25;
-    }
-    QLabel {
-        background-color: gray;
-    }
-    '''
+    style = """
+	QWidget {
+	}
+	.customTilebarWindow {
+		background-color: white;
+	}
+	.TitleBar {
+		background-color: #0b1722;
+		color: white;
+	}
+	.TitleBar QPushButton {
+		border: none;
+	}
+	.TitleBar .icon{
+		margin-left: 5;
+	}
+	.TitleBar .title{
+		margin-left: 5;
+		color: white;
+	}
+	.TitleBar .top{
+		margin-left: 5;
+		color: white;
+		border-radius: 20;
+		background-color: #0b1722;
+	}
+	.TitleBar .top:hover{
+		background-color: #273b4e;
+	}
+	.TitleBar .topActive{
+		margin-left: 5;
+		color: white;
+		border-radius: 20;
+		background-color: #273b4e;
+	}
+	.TitleBar .min{
+		background-color: #53c22a;
+		color: white;
+	}
+	.TitleBar .max{
+		background-color: #e5bf28;
+		color: white;
+	}
+	.TitleBar .close{
+		background-color: #f45952;
+		color: white;
+	}
+	.TitleBar .min:hover {
+		background-color: #2ba13e;
+	}
+	.TitleBar .max:hover {
+		background-color: #cf9001;
+	}
+	.TitleBar .close:hover {
+		background-color: #df2f25;
+	}
+	QLabel {
+		background-color: gray;
+	}
+	"""
 
     class MainWindow(QMainWindow, CustomTitleBarWindowMixin):
         _padding = 5
+
         def __init__(self) -> None:
             super(QMainWindow, self).__init__()
             label = QLabel("hello hhhhhhhhhhh")
@@ -892,4 +982,3 @@ if __name__ == "__main__":
     app.installEventFilter(eventFilter)
     app.exec_()
     app.removeEventFilter(eventFilter)
-

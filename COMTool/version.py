@@ -1,9 +1,9 @@
 
 major = 3
 minor = 4
-dev   = 1
+dev   = 2
 
-__version__ = "{}.{}.{}".format(major, minor, dev)
+__version__ = "{}.{}.{} by hench".format(major, minor, dev)
 
 class Version:
     def __init__(self, major=major, minor=minor, dev=dev, name="", desc=""):
