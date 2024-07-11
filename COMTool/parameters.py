@@ -14,17 +14,32 @@ appName = "COMTool"
 appIcon = "assets/logo.png"
 appLogo = "assets/logo.png"
 appLogo2 = "assets/logo2.png"
-dataPath = os.path.abspath(os.path.dirname(__file__)).replace("\\", "/") # replace \ to / for qss usage, qss only support /
+dataPath = os.path.abspath(os.path.dirname(__file__)).replace(
+    "\\", "/"
+)  # replace \ to / for qss usage, qss only support /
 assetsDir = os.path.join(dataPath, "assets").replace("\\", "/")
-if not os.path.exists(assetsDir): # for pyinstaller pack
+if not os.path.exists(assetsDir):  # for pyinstaller pack
     dataPath = os.path.dirname(dataPath)
     assetsDir = os.path.join(dataPath, "assets").replace("\\", "/")
 
-defaultBaudrates = [9600, 19200, 38400, 57600, 74880, 115200, 921600, 1000000, 1500000, 2000000, 4500000]
+defaultBaudrates = [
+    9600,
+    19200,
+    38400,
+    57600,
+    74880,
+    115200,
+    921600,
+    1000000,
+    1500000,
+    2000000,
+    4500000,
+]
 encodings = ["ASCII", "UTF-8", "UTF-16", "GBK", "GB2312", "GB18030"]
 customSendItemHeight = 40
 
 author = "Neucrack"
+
 
 def get_config_path(configFileName):
     configFilePath = configFileName
@@ -36,15 +51,20 @@ def get_config_path(configFileName):
         pass
     return configFilePath
 
-configFileName="config.json"
-configFilePath=configFileName
 
-if sys.platform.startswith('linux') or sys.platform.startswith('darwin') or sys.platform.startswith('freebsd'):
+configFileName = "config.json"
+configFilePath = configFileName
+
+if (
+    sys.platform.startswith("linux")
+    or sys.platform.startswith("darwin")
+    or sys.platform.startswith("freebsd")
+):
     configFileDir = os.path.join(os.getenv("HOME"), ".config/comtool")
     configFilePath = get_config_path(configFileName)
 else:
     configFileDir = os.path.abspath(os.getcwd())
-    configFilePath  = os.path.join(configFileDir, configFileName)
+    configFilePath = os.path.join(configFileDir, configFileName)
 
 logPath = os.path.join(configFileDir, "run.log")
 log = Logger(file_path=logPath)
@@ -60,7 +80,7 @@ class Parameters:
         "encoding": "UTF-8",
         "skipVersion": None,
         "connId": "serial",
-        "pluginsInfo": {          # enabled plugins ID
+        "pluginsInfo": {  # enabled plugins ID
             "external": {
                 # "myplugin2": {
                 #     # "package": "myplugin",  # package installed as a python package
@@ -81,11 +101,10 @@ class Parameters:
             #              }
             #         },
             #         "plugin": {
-
             #         }
             #     }
             # }
-        ]
+        ],
     }
 
     def save(self, path):
@@ -102,7 +121,7 @@ class Parameters:
             config = json.load(f)
             if "version" in config and config["version"] == self.config["version"]:
                 self.config = config
-            else: # for old config, just backup
+            else:  # for old config, just backup
                 t = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
                 old_path = "{}.bak.{}.json".format(path, t)
                 log.w("Old config file, backup to", old_path)
@@ -119,30 +138,23 @@ class Parameters:
         return json.dumps(self.config)
 
 
-strStyleShowHideButtonLeft = '''
+strStyleShowHideButtonLeft = """
 QPushButton {
     border-image: url("$DataPath/assets/arrow-left.png")
 }
 QPushButton:hover {
     border-image: url("$DataPath/assets/arrow-left-white.png")
-}'''
+}"""
 
-strStyleShowHideButtonRight = '''
+strStyleShowHideButtonRight = """
 QPushButton {
     border-image: url("$DataPath/assets/arrow-right.png")
 }
 QPushButton:hover {
     border-image: url("$DataPath/assets/arrow-right-white.png")
-}'''
+}"""
 
 styleForCode = {
-    "light":{
-        "iconColor": "white",
-        "iconSelectorColor": "#929599"
-    },
-    "dark":{
-        "iconColor": "#bcbcbd",
-        "iconSelectorColor": "#bcbcbd"
-    }
+    "light": {"iconColor": "white", "iconSelectorColor": "#929599"},
+    "dark": {"iconColor": "#bcbcbd", "iconSelectorColor": "#bcbcbd"},
 }
-
